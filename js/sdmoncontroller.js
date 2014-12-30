@@ -2,9 +2,9 @@
 
 /* Controllers */
 
-var myApp = angular.module('sdmonApp', ['ipCookie','ngCookies','ngSanitize']);
+var myApp = angular.module('sdmonApp', ['ipCookie','ngSanitize']);
 
-myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $http) {
+myApp.controller('SortableTableCtrl', function(ipCookie, $scope, $http) {
   
   $scope.skillid = new Array();
   //$scope.showskills = $cookieStore.get('showskills') || new Array();
@@ -25,7 +25,8 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
   $scope.audiblealert;
   $scope.audalertselect = ipCookie('audalert') || false;
   $scope.sound = ipCookie('audalertsnd') || "chime_a.wav";
-  $scope.bgcolor = "background-color:white;";
+  //jptst$scope.bgcolor = "background-color:white;";
+  $scope.bgcolor = "white";
   $scope.buttonarray = new Array();
   $scope.finalbtnarray = new Array();
   $scope.btablestyle;
@@ -38,6 +39,7 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
   var browserwidth;
   var browserwidth_last = 0;
   var lastinrow = false;
+  var numteams = 5;
 
   var premonly = ['3009','3016'];
 
@@ -48,7 +50,7 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
   $scope.aghead = {"ext": "Extension", "status": "Status", "name": "Name", "timeinstate": "Time in State", "auxstate": "AUX State"};
 
 
-  $http.get('jpdata/summary.json').success(function(data) {
+  $http.get('summary/summary.json').success(function(data) {
     $scope.getdata();
 //    $scope.body = data;
 
@@ -63,7 +65,8 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
     $scope.visualalert = true;
     $scope.audalertselect = false;
     $scope.sound = "chime_a.wav";
-    $scope.bgcolor = "background-color:white;";
+    //jptst$scope.bgcolor = "background-color:white;";
+    $scope.bgcolor = "white";
     $scope.hidelogout = false;
     $scope.r_counter = false;
 
@@ -98,11 +101,12 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
     var oldbody = $scope.body;
     $scope.refresh_count++;
     $scope.audiblealert=false;
-    $scope.btablestyle = "width:"+(window.innerWidth-100)+"px;"; 
+    //jptst$scope.btablestyle = "width:"+(window.innerWidth-80)+"px;";
+    $scope.btablestyle = {'width':(window.innerWidth-80)+'px'};
 
 //  Used this cluster instead of $http.get to avoid caching json files
     $http({
-         url: 'jpdata/summary.json',
+         url: 'summary/summary.json',
 	 method: "GET",
          params: {'meaningless': new Date().getTime() }
     }).success(function(data) {
@@ -110,9 +114,9 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
 
       // Exit if no data returned
       if($scope.body.length < 1) {
-        $scope.audiblealert=oldaudiblealert;
-	$scope.body = oldbody;
-	return
+        $scope.body = oldbody;
+        $scope.audiblealert = oldaudiblealert;
+        return;
       }
 
       // Clear arrays 
@@ -136,9 +140,9 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
         //tmpbtnarray.push({value:$scope.body[b].skill});
         tmpbtnarray.push({value:$scope.body[b].skill,label:$scope.body[b].label});
 
-	if($scope.showskills.indexOf($scope.body[b].skill) > -1 && $scope.body[b].callsw > 0 && $scope.body[b].availag == 0) {
+	if($scope.showskills.indexOf($scope.body[b].skill) > -1 && $scope.body[b].callsw > 0 && $scope.body[b].availag ==0) {
 	  $scope.audiblealert=true;
-	  callswcolor = "red";
+          callswcolor = "red";
         }
 
         // This just creates an array of all the skills
@@ -150,8 +154,9 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
       setTimeout(function() {$scope.mkbtntable();}, 10);
 
       // Set background color
-      $scope.bgcolor = "background-color:"+callswcolor+";";
-
+      //jptst$scope.bgcolor = "background-color:"+callswcolor+";";
+      $scope.bgcolor = callswcolor;
+      
       // Play sound if calls waiting
       if($scope.audiblealert) {
         $scope.soundselect()
@@ -171,7 +176,7 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
       if(premonly.indexOf($scope.skillid[z]) > -1) {isprem = true;}
 
       $http({
-         url: 'jpdata/skills/'+$scope.skillid[z]+'.agent.json',
+         url: 'skills/'+$scope.skillid[z]+'.agent.json',
 	 method: "GET",
 	 params: {'meaningless': new Date().getTime() }
       }).success(function(data) {
@@ -245,7 +250,8 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
   $scope.chgvisalert = function() {
     ipCookie('visalert',$scope.visualalert, { expires: 30 });
     if(!$scope.visualalert) {
-      $scope.bgcolor = "background-color:white;";
+      //jptst$scope.bgcolor = "background-color:white;";
+      $scope.bgcolor = "white";
     }
   }
 
@@ -259,9 +265,14 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
   }
 
   $scope.soundselect = function() {
+    var myNav = navigator.userAgent.toLowerCase();
     if($scope.audalertselect) {
-      var snd = new Audio("jpdata/sounds/" + $scope.sound);
+      var snd = new Audio("sounds/" + $scope.sound);
       snd.play();
+    }
+    // Play in IE browser
+    if($scope.audalertselect && myNav.indexOf('msie') != -1) {
+      document.getElementById("dummyspan").innerHTML= "<embed src='sounds/"+$scope.sound+"' hidden=true autostart=true loop=false>";
     }
   }
 
@@ -271,29 +282,42 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
 
   	if (callhold > 0 && availagent == 0) {
 		// Set the row color to red
-		elements = "background-color:red;color:white;";
+		//jptstelements = "background-color:red;color:white;";
+		elements = {'background-color':'red','color':'white'};
 
 		// Set the screen background color red 
 		if($scope.visualalert) {
-		  $scope.bgcolor = "background-color:red;";
+		  //jptst$scope.bgcolor = "background-color:red;";
+		  $scope.bgcolor = "red";
 		}
 	} 
 	else if (callhold > 0 && availagent > 0) {
-		elements = "background-color:purple;color:white;";
+		//jptst elements = "background-color:purple;color:white;";
+		elements = {'background-color':'purple','color':'white'};
+
+		// Set the screen background color red 
+		if($scope.visualalert) {
+		  //jptst$scope.bgcolor = "background-color:red;";
+		  $scope.bgcolor = "red";
+		}
 	} 
 	else if (callhold == 0 && availagent > 0) {
-		elements = "background-color:blue;color:white;";
+		//jptst elements = "background-color:blue;color:white;";
+		elements = {'background-color':'blue','color':'white'};
 	} 
 	else if (callhold == 0 && availagent == 0) {
-		elements = "background-color:orange;color:white;";
+		//jptst elements = "background-color:orange;color:white;";
+		elements = {'background-color':'orange','color':'white'};
 	} 
 	else {
-		elements = "background-color:white";
+		//jptst elements = "background-color:white";
+		elements = {'background-color':'white'};
 	}
 
 	var skillidindex = $scope.skillid.indexOf(skill);
 	if(skillidindex > -1) {
-	  elements += "border:5px solid cyan";
+	  //jptstelements += "border:5px solid cyan";
+	  elements.border = '5px solid cyan';
 	}
 
 	return elements;
@@ -303,7 +327,8 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
   	var elements;
 	var avail = status.indexOf("AVAIL");
 	if(avail > -1) {
-	  elements = "background-color:lime";
+	  //jptstelements = "background-color:lime";
+	  elements = {'background-color':'lime'};
 	}
 
 	return elements;
@@ -311,32 +336,27 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
 	  
 
   $scope.sumtable = function() {
-    var elements = "width:50%;";
+    //jptstvar elements = "width:50%;";
+    var elements = {'width':'50%'};
     if($scope.skillid.length < 1) {
-      elements = "width:auto;"
-    }
-    return elements;
-  }
-
-  $scope.agtable = function() {
-    var elements = "display:block;";
-    if($scope.skillid.length < 1) {
-      elements = "display:none;"
+      elements = {'width':'auto'};
     }
     return elements;
   }
 
   $scope.agtable_nosum = function () {
-    var elements = "agents";
+    //jptstvar elements = "agents";
+    var elements;
     if($scope.hidesummary) {
       //elements = "agents_nosum";
-      elements = "float:left;width:auto;";
+      //jptst elements = "float:left;width:auto;";
+      elements = {'cssFloat':'left','width':'auto'};
     }
     return elements;
   }
 
 
-  $scope.sumsort = {
+  $scope.sort = {
     column: "label",
     decending: false
   };
@@ -346,14 +366,17 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
     decending: false
   };
 
-  $scope.selectedCls = function(sortobj,column) {
-  	//return column == $scope.sort.column && 'sort-' + $scope.sort.descending;
-  	return column == sortobj.column && 'sort-' + sortobj.descending;
+  $scope.selectedCls = function(column) {
+    return column == $scope.sort.column && 'sort-' + $scope.sort.descending;
    };
+
+  $scope.agselectedCls = function(column) {
+    return column == $scope.agsort.column && 'sort-' + $scope.agsort.descending;
+  };
+     
           
-  $scope.changeSorting = function(sortobj,column) {
-	  //var sort = $scope.sort;
-	  var sort = sortobj;
+  $scope.changeSorting = function(column) {
+	  var sort = $scope.sort;
           if (sort.column == column) {
                   sort.descending = !sort.descending;
           } else {
@@ -362,6 +385,15 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
           }
   };
 
+  $scope.agchangeSorting = function(column) {
+	  var sort = $scope.agsort;
+          if (sort.column == column) {
+                  sort.descending = !sort.descending;
+          } else {
+	          sort.column = column;
+                  sort.descending = false;
+          }
+  };
 
 //  var tmparray = new Array();
 //  tmparray.push({value:"3009"});
@@ -380,13 +412,14 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
   }
 
   $scope.filterlogout = function (item) {
-    if ($scope.hidelogout && item.status.indexOf('Logged out') > -1) {return false;}
+    if ($scope.hidelogout && item.status.indexOf('Logged') > -1) {return false;}
     else {return true;}
-  }
+  } 
 
   $scope.addremoveskill = function (skill) {
     // Start by setting background color to white each time
-    $scope.bgcolor = "background-color:white;";
+    //jptst$scope.bgcolor = "background-color:white;";
+    $scope.bgcolor = "white";
 
     var i = $scope.showskills.indexOf(skill);
     var k = $scope.skillid.indexOf(skill);
@@ -404,14 +437,19 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
   }
 
   $scope.btnstyle = function (skill) {
-    var styletext = "text-align:center;";
+    //jptstvar styletext = "text-align:center;font-size:0.7em;width:8em;";
+    var styletext = {'text-align':'center','font-size':'0.7em','width':'8em'};
     var i = $scope.showskills.indexOf(skill);
     var b = $scope.allskills.indexOf(skill);
     if (i > -1) {
-      styletext = styletext+"border:0.25em solid blue;";
+      //styletext = "border:0.25em solid blue;";
+      //jptststyletext = styletext+"border:0.25em solid blue;";
+      styletext.border = '0.25em solid blue';
     }
-    if ($scope.body[b].callsw > 0 && $scope.body[b].availag ==0) {
-      styletext = styletext+"background-color:red;"
+    //jptstif ($scope.body[b].callsw > 0 && $scope.body[b].availag ==0) {
+    if ($scope.body[b].callsw > 0) {
+      //jptststyletext = styletext+"background-color:red;"
+      styletext.backgroundColor = 'red';
     }
     return styletext;
   } 
@@ -429,9 +467,9 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
     else { 
       //Multiple skill selection option
       if($scope.multiteam == true) {
-        // Limit to 5 skills
-        if($scope.skillid.length < 5) { $scope.skillid.push(skill); }
-        else { alert("Maximum of 5 teams selected at a time."); }
+        // Limit number of skills
+        if($scope.skillid.length < numteams || $scope.agquery == "more teams") { $scope.skillid.push(skill); }
+        else { alert("Maximum of "+numteams+" teams selected at a time."); }
       }
       else {
         while($scope.skillid.length > 0) {$scope.skillid.pop();}
@@ -449,7 +487,7 @@ myApp.controller('SortableTableCtrl', function(ipCookie, $cookieStore, $scope, $
       $scope.teamselected = false;
     }
     else {
-      $scope.teamtitle = "jpdata/titles/"+skill+".html";
+      $scope.teamtitle = "titles/"+skill+".html";
     }
   };
 
