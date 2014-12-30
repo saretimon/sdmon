@@ -1,196 +1,94 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html ng-app="sdmonApp" xmlns="http://www.w3.org/1999/xhtml" lang="en-Us" xml:lang="en-Us" >
+<!doctype html>
+<html lang="en" ng-app="sdmonApp">
+
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<link rel="schema.DC" href="http://purl.org/DC/elements/1.0/"/>
-<link rel="SHORTCUT ICON" href="//w3.ibm.com/favicon.ico"/>
-<link href="http://w3.ibm.com/" rel="canonical" /> 
+  <meta charset="utf-8">
+  <title>AngularJS WebACD</title> 
 
-<meta name="IBM.Effective" content="YYYY-MM-DD" scheme="W3CDTF" /> 
-<meta name="Description" content="_______"  /> 
-<meta name="DC.Subject" content="_______" scheme="IBM_SubjectTaxonomy" /> 
-<meta name="DC.Type" content="_______" scheme="IBM_ContentClassTaxonomy" /> 
-<meta name="DC.Date" content="YYYY-MM-DD" scheme="iso8601" /> 
-<meta name="Security" content="public"  /> 
-<meta name="Keywords" content="_______"  /> 
-<meta name="DC.Publisher" content="IBM Corporation" /> 
-<meta name="Source" content="Atlas v17 template generator delivery:delivery_text authoring:authoring_text" /> 
-<meta name="DC.Rights" content="� Copyright IBM Corp. 2014" /> 
-<meta name="DC.Language" scheme="rfc1766" content="en-Us" /> 
-<meta name="Robots" content="noindex,nofollow" /> 
-<meta name="Owner" content="_______" /> 
-<meta name="IBM.Country" content="us" /> 
-<title>WebACD</title>
+  <link rel="stylesheet" type="text/css" href="css/sdmon.css">
+  
+  <script src="js/angular.min.js"></script>
+  <script src="js/angular-sanitize.min.js"></script>
+  <script src="js/angular-cookie_ivpusic.js"></script>
+  <script src="js/sdmoncontroller.js"></script>
 
-<link href="//1.w3.s81c.com/common/v17/css/w3.css" rel="stylesheet" title="w3" type="text/css" />
-<script src="//1.w3.s81c.com/common/js/dojo/w3.js" type="text/javascript">//</script>
+  <link rel="stylesheet" type="text/css" href="css/sdmon.css">
 
-<script src="js/angular.min.js"></script>
-<script src="js/angular-sanitize.min.js"></script>
-<script src="js/angular-cookie_ivpusic.js"></script>
-<script src="js/sdmoncontroller.js"></script>
-
-<link rel="stylesheet" type="text/css" href="css/sdmon.css">
-
-
-<script type="text/javascript">ibmweb.config.set({ appmast: {  enabled: true }});</script>
 </head>
-<body id="ibm-com" ng-controller="SortableTableCtrl">
-<div id="ibm-top" class="ibm-application ibm-landing-page">
 
-<!-- MASTHEAD_BEGIN -->
-<div id="ibm-masthead">
-  <div id="ibm-universal-nav">
-    <ul id="ibm-unav-links">
-      <li id="ibm-home"><a href="http://w3.ibm.com">w3</a></li>
-    </ul>
-    <div class="ibm-masthead-tools">
-      <p id="ibm-mast-options">
+<body ng-controller="SortableTableCtrl" ng-style="{'background-color':bgcolor}">
 
-      </p>
 
+<ul id="menu">
+  <li><a href="#">Options</a>
+    <div class="dropdown_5columns">
+      <div class="col_1">
+        <p class="dropdown_options_titles">Call Holding Alerts</p>
+
+        <input name=beepalert type=checkbox ng-model="audalertselect" ng-change="chgaudalert()">
+        <label for="beepalertid">Audible Alert</label>
+	<select ng-model="sound" ng-change="chgsndselect()" ng-hide="!audalertselect" style="font-size:0.8em">
+          <option value="chime_a.wav">Chime 1</option>
+          <option value="chime_b.wav">Chime 2</option>
+          <option value="carskid.wav">Car Skid</option>
+          <option value="lionroar.wav">Lion</option>
+          <option value="meep.wav">Meep</option>
+          <option value="phone.wav">Phone</option>
+          <option value="shiphorn.wav">Ship Horn</option>
+          <option value="ticking.wav">Ticking</option>
+          <option value="whistle.wav">Whistle</option>
+        </select>
+
+        <br><br>
+        <input type=checkbox ng-model="visualalert" ng-change="chgvisalert()">
+        Visual Alert<br>
+        (Red background)
+
+      </div>
+
+      <div class="col_1">
+        <br>
+	<input type=checkbox ng-model="multiteam" ng-change="chgmultiteam()">Select Multiple Teams
+	<br>
+        <input type=checkbox ng-model="s_agtable">Search Agent Table
+	<br>
+        <input type=checkbox ng-model="r_counter">Show Refresh Counter
+	<br>
+        <input type=checkbox ng-model="hidesummary">Hide Summary Table
+	<br>
+        <input type=checkbox ng-model="hidelogout">Hide Logout Agents
+	<br><br>
+	<button ng-click="setdefaults()">Default Settings</button>
+      </div>
       
-      <div id="ibm-search-module">
-        <form method="get" action="http://www.ibm.com/Search/" id="ibm-search-form">
-          <p>
-            <label for="q"> <span class="ibm-access">Search</span> </label>
-            <input id="q" value="Search" maxlength="100" name="q" type="text">
-            <input name="v" type="hidden" value="17">
-            <input type="hidden" name="en" value="utf">
-            <input name="lang" type="hidden" value="en">
-            <input name="cc" type="hidden" value="us">
-            <input value="Submit" class="ibm-btn-search" id="ibm-search" type="submit">
-          </p>
-        </form>
+    </div>
+  </li>
+  <li><a href="#">Team Info</a>
+    <div id="top" class="dropdown_1column">
+      <h1 ng-hide="teamselected" style="text-align: center;">Select a Team</h1>
+      <button ng:repeat="row in body" ng-hide="teamselected" ng-click="gettitle(row.skill)">{{row.label}}</button><br>
+      <div ng-hide="!teamselected" style="text-align: center;">
+	<ng-include src="teamtitle"></ng-include>
+        <br><button ng-click="gettitle('backtoteams')">Back to Team Selection</button>
       </div>
     </div>
-  </div>
-  <div class="ibm-menu-subtabs">
-        <h2>WebACD </h2>
-        <ul>
-          <li><a href="#">Options</a></li>
-          <li><a href="#">Team Info</a></li>
-          <li><a href="#">Color Scheme</a></li>
-          <li><a href="#">Links</a></li>
-        </ul>
-  </div>
-  <div id="ibm-common-menu">
-    <div class="ibm-container-body">
-      
-      <div class="ibm-columns">
-        <h2 class="ibm-access">Options</h2>
-        <div class="ibm-columns">
-          <div class="ibm-menu-dynamic">
-            <div class="ibm-col-5-1">
-              <p class="dropdown_options_titles">Call Holding Alerts</p><br>
-              
-              <input name=beepalert type=checkbox ng-model="audalertselect" ng-change="chgaudalert()">
-              <label for="beepalertid">Audible Alert</label>
-              <select ng-model="sound" ng-change="chgsndselect()" ng-hide="!audalertselect" style="font-size:0.8em">
-              <option value="chime_a.wav">Chime 1</option>
-              <option value="chime_b.wav">Chime 2</option>
-              <option value="carskid.wav">Car Skid</option>
-              <option value="lionroar.wav">Lion</option>
-              <option value="meep.wav">Meep</option>
-              <option value="phone.wav">Phone</option>
-              <option value="shiphorn.wav">Ship Horn</option>
-              <option value="ticking.wav">Ticking</option>
-              <option value="whistle.wav">Whistle</option>
-              </select>  
-
-              <br><br>
-              <input type=checkbox ng-model="visualalert" ng-change="chgvisalert()"> 
-              Visual Alert<br>
-              (Red background)
-
-            </div>
-            <div class="ibm-col-5-2">
-              <br>
-              <input type=checkbox ng-model="multiteam" ng-change="chgmultiteam()">Select Multiple Teams
-              <br>
-              <input type=checkbox ng-model="s_agtable">Search Agent Table
-              <br>
-              <input type=checkbox ng-model="r_counter">Show Refresh Counter
-              <br>
-              <input type=checkbox ng-model="hidesummary">Hide Summary Table
-              <br>
-              <input type=checkbox ng-model="hidelogout">Hide Agent Logout List
-              <br><br>
-              <button ng-click="setdefaults()">Default Settings</button>
-            </div>
-
-          </div>
-        </div>
-      </div>
-      <div class="ibm-columns">
-        <h2 class="ibm-access">Team Info</h2>
-        <div class="ibm-columns">
-          <div class="ibm-menu-dynamic">
-            <div id="top" class="ibm-col-1-1">
-              <h1 ng-hide="teamselected" style="text-align: center;">Select a Team</h1>
-              <button ng:repeat="row in body" ng-hide="teamselected" ng-click="gettitle(row.skill)">{{row.label}}</button><br>
-              <div ng-hide="!teamselected" style="text-align: center;">
-                <ng-include src="teamtitle"></ng-include>
-                <br><button ng-click="gettitle('backtoteams')">Back to Team Selection</button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="ibm-columns">
-        <h2 class="ibm-access">Color Scheme</h2>
-        <div class="ibm-columns">
-          <div class="ibm-menu-dynamic">
-            <div class="ibm-col-1-1" style="text-align:center;">
-              <p style="color:blue;font-size:1.2em;font-weight:bold;">BLUE - No calls holding, at least one person is available.</p><br>
-              <p style="color:red;font-size:1.2em;font-weight:bold;">RED - Call(s) holding, nobody available.</p><br>
-              <p style="color:orange;font-size:1.2em;font-weight:bold;">ORANGE - No calls holding, nobody available.</p><br>
-              <p style="color:purple;font-size:1.2em;font-weight:bold;">PURPLE - Call(s) holding, at least one person is available. Typically, this means a call is ringing, but hasn't been answered.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="ibm-columns">
-        <h2 class="ibm-access">Links</h2>
-        <div class="ibm-columns">
-          <div class="ibm-menu-dynamic">
-            <div class="ibm-col-1-1" style="text-align:center;">
-              <a href="/webacd/MARKET.html" target="_blank" style="color:blue">Marketing</a><br><br>
-              <a href="/webacd/PAGER.html" target="_blank" style="color:blue">Pager Numbers</a><br><br>
-              <a href="/webacd/TRANSFER.html" target="_blank" style="color:blue">Transfer Numbers</a><br><br>
-              <a href="/webacd/OUTAGE.html" target="_blank" style="color:red">OUTAGE / Disaster Recovery Must Answer Line</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="ibm-mm-close">
-        <span title="Close"></span>
-      </div>
-
+  </li>
+  <li><a href="#">Color Scheme</a>
+    <div class="dropdown_1column">
+      <p class="colorscheme" style="color:blue;">BLUE - No calls holding, at least one person is available.</p>
+      <p class="colorscheme" style="color:red;">RED - Call(s) holding, nobody available.</p>
+      <p class="colorscheme" style="color:orange;">ORANGE - No calls holding, nobody available.</p>
+      <p class="colorscheme" style="color:purple;">PURPLE - Call(s) holding, at least one person is available. Typically, this means a call is ringing, but hasn't been answered.</p>
     </div>
-  </div>
-</div>
-
-<!-- MASTHEAD_END -->
-
-
-
-<!-- jptst<div style="{{bgcolor}}">  -->
-<div ng-style="{'background-color':bgcolor}"> 
-<!-- This div to determine color of background -->
-
-<div id="ibm-pcon" style="margin-left:1.5em;width:100%;">
-<!-- CONTENT_BEGIN -->
-<div id="ibm-content">
-<!-- CONTENT_BODY -->
-<div id="ibm-content-body">
-<div id="ibm-content-main" style="width:98%">
+   </li>
+  <li><a href="#">Links</a>
+    <div class="dropdown_1column">
+      <a href="http://www.google.com" target="_blank" style="color:blue">Google</a><br><br> 
+    </div>
+   </li>
+</ul>
 
 
-<!-- dummyspan for making audible alert work in IE -->
-<span id=dummyspan></span>
 
 <div id="tables_div_padding" style="padding-bottom:200em;"><br>
 <div id="tables_div">
@@ -273,26 +171,6 @@ Skill:
 
 
 
-<!-- FEATURES_BEGIN -->
-<div id="ibm-content-sidebar">
-<div id="ibm-contact-module">
-<!--IBM Contact Module-->
-</div>
-<!-- Sidebar Space Content -->
-</div>
-<!-- FEATURES_END -->
-<!-- CONTENT_BODY_END -->
-</div>
-</div>
-<!-- CONTENT_END -->
-
-<!-- background color end -->
-</div>
-
-
-
-
-</div>
 
 </body>
 </html>
